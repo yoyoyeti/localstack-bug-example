@@ -1,0 +1,33 @@
+name: test
+networks:
+  test-net: null
+services:
+  localstack:
+    image: localstack/localstack-pro:latest-bigdata
+    environment:
+      DEBUG: "1"
+      DOCKER_HOST: unix:///var/run/docker.sock
+      LOCALSTACK_AUTH_TOKEN: ${LOCALSTACK_AUTH_TOKEN}
+    healthcheck:
+      test: "curl 2>/dev/null http://localhost:4566/_localstack/init | grep '\"READY\": true'"
+      timeout: 5s
+      interval: 5s
+      retries: 10
+      start_period: 30s
+    ports:
+      - mode: ingress
+        target: 4566
+        published: 4566
+        protocol: tcp
+    volumes:
+      - type: bind
+        source: /var/run/docker.sock
+        target: /var/run/docker.sock
+      - type: bind
+        source: ./fixtures/localstack
+        target: /etc/localstack/init
+      - type: bind
+        source: ./fixtures/resources
+        target: /resources
+    networks:
+      test-net: null
